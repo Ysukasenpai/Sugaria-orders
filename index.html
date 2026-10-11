@@ -96,6 +96,13 @@ fieldset{border:0;padding:0;margin:0 0 1rem}
 #lista{padding:0;margin:0}
 #adicionar{margin-top:1rem}
 .resumo{padding:0;margin:.8rem 0;list-style:none;font-size:.95rem}
+.mbway{text-align:center}
+.mbway>span{display:block}
+.mbway .nota{margin-top:.2rem}
+.num-copiar{display:flex;width:fit-content;align-items:center;gap:.7rem;background:var(--branco);border:2px dashed var(--cacau);border-radius:14px;padding:.45rem .9rem;margin:.5rem auto;cursor:pointer;font-family:'Quicksand',system-ui,sans-serif;font-weight:700;font-size:1.5rem;color:var(--cacau);transition:transform .12s}
+.num-copiar:active{transform:scale(.96)}
+.num-copiar::after{content:'Copiar';font-size:.78rem;background:var(--cacau);color:var(--creme);border-radius:99px;padding:.15rem .6rem}
+.num-copiar.ok::after{content:'Copiado ✓';background:#2E7D32}
 .total{display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem;margin:1rem 0 .8rem}
 .btn{width:100%;border:0;border-radius:999px;padding:1rem;background:var(--cacau);color:var(--creme);font-weight:700;font-size:1.05rem;cursor:pointer;transition:transform .12s,opacity .2s}
 .btn:active:not(:disabled){transform:scale(.97)}
@@ -170,7 +177,7 @@ footer{background:var(--cacau);color:var(--creme);text-align:center;padding:1.1r
       <h2>5. Pagamento</h2>
       <div class="mbway">
         <span>Paga por MB WAY para o número</span>
-        <b id="mbNumero"></b>
+        <button type="button" class="num-copiar" id="mbNumero"></button>
         <span class="nota" id="mbInstrucoes"></span>
       </div>
       <div class="total"><span>Total</span><span id="total">0,00 €</span></div>
@@ -190,7 +197,7 @@ footer{background:var(--cacau);color:var(--creme);text-align:center;padding:1.1r
     <ul class="resumo" id="mResumo"></ul>
     <div class="mbway">
       <span>Envia <strong id="mTotal"></strong> por MB WAY para</span>
-      <b id="mMb"></b>
+      <button type="button" class="num-copiar" id="mMb"></button>
       <span class="nota" id="mInstr"></span>
     </div>
     <p class="nota" style="margin-bottom:1rem">Se o WhatsApp não abriu sozinho, usa o botão abaixo para enviar o resumo.</p>
@@ -263,6 +270,25 @@ $('#sabores').innerHTML = SABORES.map((s, i) => `
 
 $('#mbNumero').textContent = MBWAY_NUMERO;
 $('#mbInstrucoes').textContent = MBWAY_INSTRUCOES;
+
+// Toque no número MB WAY = copia para a área de transferência (só dígitos, sem espaços)
+document.querySelectorAll('.num-copiar').forEach(b => {
+  b.setAttribute('aria-label', 'Copiar número MB WAY ' + MBWAY_NUMERO);
+  b.addEventListener('click', async () => {
+    const num = MBWAY_NUMERO.replace(/\D/g, '');
+    try {
+      await navigator.clipboard.writeText(num);
+    } catch (err) {
+      const t = document.createElement('textarea');
+      t.value = num; t.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); } catch (e2) {}
+      t.remove();
+    }
+    b.classList.add('ok');
+    setTimeout(() => b.classList.remove('ok'), 2000);
+  });
+});
 
 const totalPedido = () => estado.carrinho.reduce((a, b) => a + b.preco, 0);
 const totalBolachas = () => estado.carrinho.reduce((a, b) => a + b.tam, 0);
