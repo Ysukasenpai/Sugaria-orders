@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sugaria · Bolachas artesanais</title>
+<meta name="description" content="Bolachas artesanais da Sugaria. Monta a tua caixa de 6 ou 12 e encomenda para a semana.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rosa:#F7D8E0; --rosa-fundo:#FCE9EE; --rosa-forte:#D96C8C;
+  --creme:#FFF6EA; --branco:#fff; --cacau:#4A2A1D; --cacau-suave:#7B5646;
+  --linha:#EBD3C6; --erro:#B3263E;
+  --sombra:0 8px 24px rgba(74,42,29,.10);
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--creme);color:var(--cacau);line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;line-height:1.1}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--rosa-forte);outline-offset:2px}
+.wrap{width:min(100% - 2rem,640px);margin-inline:auto}
+
+/* Hero */
+.hero{background:var(--rosa);padding:2.5rem 0 4.5rem;border-radius:0 0 50% 50% / 0 0 36px 36px;text-align:center}
+.marca{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(3.6rem,18vw,6.5rem);letter-spacing:-.03em;line-height:.95}
+.hero p{margin:1rem auto 0;max-width:30ch;font-size:1.15rem;color:var(--cacau-suave)}
+.hero .cta{display:inline-block;margin-top:1.5rem;background:var(--cacau);color:var(--creme);padding:.85rem 1.6rem;border-radius:999px;text-decoration:none;font-weight:700;transition:transform .15s}
+.hero .cta:active{transform:scale(.95)}
+.bolachas{display:flex;justify-content:center;gap:.6rem;margin-top:2rem}
+.bolacha{width:46px;height:46px;border-radius:50%;box-shadow:inset 0 -4px 0 rgba(0,0,0,.08)}
+
+/* Cartões */
+main{margin-top:-2.5rem;padding-bottom:3rem}
+.cartao{background:var(--branco);border-radius:24px;box-shadow:var(--sombra);padding:1.4rem;margin-bottom:1.2rem}
+.cartao h2{font-size:1.45rem;margin-bottom:.9rem}
+.nota{color:var(--cacau-suave);font-size:.92rem}
+
+/* Escolha de caixa */
+.caixas{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.caixa-opt{border:2px solid var(--linha);background:var(--creme);border-radius:18px;padding:1rem .5rem;cursor:pointer;text-align:center;transition:transform .12s,border-color .2s,background .2s}
+.caixa-opt strong{display:block;font-family:'Fraunces',serif;font-size:2rem;line-height:1}
+.caixa-opt span{font-size:.9rem;color:var(--cacau-suave)}
+.caixa-opt:active{transform:scale(.95)}
+.caixa-opt[aria-pressed="true"]{border-color:var(--cacau);background:var(--rosa-fundo)}
+
+/* Progresso */
+.progresso{position:sticky;top:0;z-index:5;background:var(--branco);padding:.6rem 0 .8rem;margin-bottom:.4rem}
+.progresso-topo{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;margin-bottom:.4rem}
+.barra{height:12px;background:var(--rosa-fundo);border-radius:99px;overflow:hidden}
+.barra i{display:block;height:100%;width:0;background:var(--rosa-forte);border-radius:99px;transition:width .3s}
+.barra.cheia i{background:var(--cacau)}
+
+/* Sabores */
+.sabor{display:flex;align-items:center;gap:.8rem;padding:.7rem 0;border-top:1px solid var(--linha)}
+.sabor:first-of-type{border-top:0}
+.sabor .bolacha{width:40px;height:40px;flex:none}
+.sabor-nome{flex:1;font-weight:500}
+.stepper{display:flex;align-items:center;gap:.5rem}
+.stepper button{width:42px;height:42px;border-radius:50%;border:0;background:var(--cacau);color:var(--creme);font-size:1.4rem;cursor:pointer;transition:transform .12s,opacity .2s}
+.stepper button:active:not(:disabled){transform:scale(.88)}
+.stepper button:disabled{opacity:.25;cursor:not-allowed}
+.stepper output{min-width:1.6rem;text-align:center;font-weight:700;font-size:1.15rem}
+
+/* Formulário */
+label,legend{display:block;font-weight:700;margin-bottom:.3rem}
+.campo{margin-bottom:1rem}
+input[type=text],input[type=tel],input[type=email],textarea{width:100%;padding:.8rem 1rem;border:2px solid var(--linha);border-radius:14px;background:var(--creme);transition:border-color .2s}
+input:focus,textarea:focus{border-color:var(--cacau);outline:0}
+input:user-invalid,textarea:user-invalid{border-color:var(--erro)}
+fieldset{border:0;padding:0;margin:0 0 1rem}
+.opcoes{display:grid;gap:.6rem}
+.opcao input{position:absolute;opacity:0}
+.opcao span{display:block;padding:.85rem 1rem;border:2px solid var(--linha);border-radius:14px;background:var(--creme);cursor:pointer;font-weight:500;transition:transform .12s,border-color .2s,background .2s}
+.opcao span:active{transform:scale(.97)}
+.opcao input:checked+span{border-color:var(--cacau);background:var(--rosa-fundo);font-weight:700}
+.opcao input:focus-visible+span{outline:3px solid var(--rosa-forte);outline-offset:2px}
+#blocoMorada[hidden]{display:none}
+
+/* MB WAY */
+.mbway{background:var(--rosa-fundo);border-radius:18px;padding:1rem 1.1rem}
+.mbway b{font-family:'Fraunces',serif;font-size:1.5rem;display:block;margin:.2rem 0}
+
+.item{display:flex;justify-content:space-between;gap:.8rem;padding:.8rem 0;border-top:1px solid var(--linha);list-style:none}
+.item:first-child{border-top:0}
+.item-dir{text-align:right;flex:none}
+.item-dir button{border:0;background:none;color:var(--cacau-suave);text-decoration:underline;cursor:pointer;padding:.3rem .4rem;font-size:.85rem}
+#lista{padding:0;margin:0}
+#adicionar{margin-top:1rem}
+.resumo{padding:0;margin:.8rem 0;list-style:none;font-size:.95rem}
+.total{display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem;margin:1rem 0 .8rem}
+.btn{width:100%;border:0;border-radius:999px;padding:1rem;background:var(--cacau);color:var(--creme);font-weight:700;font-size:1.05rem;cursor:pointer;transition:transform .12s,opacity .2s}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.wa{background:#1FA855;color:#fff;text-decoration:none;display:block;text-align:center;margin-bottom:.6rem}
+.btn.sec{background:transparent;color:var(--cacau);border:2px solid var(--cacau)}
+.erro{color:var(--erro);font-size:.9rem;min-height:1.2em;margin-top:.5rem}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(74,42,29,.55);display:grid;place-items:center;padding:1rem;z-index:20}
+.modal[hidden]{display:none}
+.modal-caixa{background:var(--creme);border-radius:26px;padding:1.6rem;max-width:440px;width:100%;max-height:92vh;overflow:auto;animation:sobe .3s ease-out}
+.modal-caixa h2{margin-bottom:.6rem}
+.modal-caixa .mbway{margin:1rem 0}
+@keyframes sobe{from{transform:translateY(24px) scale(.96);opacity:0}}
+footer{text-align:center;padding:0 1rem 2rem;color:var(--cacau-suave);font-size:.9rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="marca">Sugaria</h1>
+    <p>Bolachas artesanais, feitas à mão e encomendadas por semana.</p>
+    <div class="bolachas" aria-hidden="true"></div>
+    <a class="cta" href="#caixa">Montar a minha caixa</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <form id="form" novalidate>
+
+    <section class="cartao" id="caixa">
+      <h2>1. Escolhe o tamanho da caixa</h2>
+      <div class="caixas" role="group" aria-label="Tamanho da caixa"></div>
+    </section>
+
+    <section class="cartao">
+      <h2>2. Escolhe os sabores</h2>
+      <div class="progresso">
+        <div class="progresso-topo"><span id="contador" aria-live="polite">Escolhe primeiro o tamanho da caixa</span></div>
+        <div class="barra" id="barra" role="progressbar" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i></i></div>
+      </div>
+      <div id="sabores"></div>
+      <button type="button" class="btn sec" id="adicionar" disabled>Adicionar caixa ao pedido</button>
+    </section>
+
+    <section class="cartao">
+      <h2>3. O teu pedido</h2>
+      <ul id="lista"></ul>
+      <div class="total"><span id="resumoTxt"></span><span id="totalCarrinho"></span></div>
+      <p class="nota">Podes montar várias caixas, do mesmo tamanho ou de tamanhos diferentes.</p>
+    </section>
+
+    <section class="cartao">
+      <h2>4. Os teus dados</h2>
+      <div class="campo"><label for="nome">Nome completo</label><input type="text" id="nome" autocomplete="name" required></div>
+      <div class="campo"><label for="tel">Telefone / WhatsApp</label><input type="tel" id="tel" autocomplete="tel" inputmode="tel" pattern="[+0-9 ]{9,17}" required></div>
+      <div class="campo"><label for="email">Email (opcional)</label><input type="email" id="email" autocomplete="email"></div>
+      <fieldset>
+        <legend>Método de entrega</legend>
+        <div class="opcoes">
+          <label class="opcao"><input type="radio" name="entrega" value="Recolha em mão (Mealhada)" checked><span>Recolha em mão (Mealhada)</span></label>
+          <label class="opcao"><input type="radio" name="entrega" value="Entrega ao domicílio (raio máx. 10 km)"><span>Entrega ao domicílio (raio máx. 10 km)</span></label>
+        </div>
+      </fieldset>
+      <div class="campo" id="blocoMorada" hidden><label for="morada">Morada completa</label><textarea id="morada" rows="3" autocomplete="street-address"></textarea></div>
+    </section>
+
+    <section class="cartao">
+      <h2>5. Pagamento</h2>
+      <div class="mbway">
+        <span>Paga por MB WAY para o número</span>
+        <b id="mbNumero"></b>
+        <span class="nota" id="mbInstrucoes"></span>
+      </div>
+      <div class="total"><span>Total</span><span id="total">0,00 €</span></div>
+      <p class="nota" id="dica"></p>
+      <button class="btn" id="enviar" type="submit" disabled>Confirmar encomenda</button>
+      <p class="erro" id="erro" role="alert"></p>
+    </section>
+  </form>
+</main>
+
+<footer>Sugaria · Mealhada</footer>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <h2 id="modalTitulo">Encomenda registada!</h2>
+    <p>Obrigada, <span id="mNome"></span>. Falta só o pagamento para fechar a encomenda.</p>
+    <ul class="resumo" id="mResumo"></ul>
+    <div class="mbway">
+      <span>Envia <strong id="mTotal"></strong> por MB WAY para</span>
+      <b id="mMb"></b>
+      <span class="nota" id="mInstr"></span>
+    </div>
+    <p class="nota" style="margin-bottom:1rem">Se o WhatsApp não abriu sozinho, usa o botão abaixo para enviar o resumo.</p>
+    <a class="btn wa" id="mWa" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+    <button class="btn sec" id="mFechar" type="button">Fechar</button>
+  </div>
+</div>
+
+<script>
+// ===================== CONFIGURAÇÃO (edita aqui) =====================
+const GOOGLE_SCRIPT_URL = 'COLA_AQUI_O_TEU_URL';
+const WHATSAPP_NUMERO   = '351900000000';   // indicativo + número, só dígitos
+const MBWAY_NUMERO      = '900 000 000';    // número MB WAY que aparece ao cliente
+const MBWAY_INSTRUCOES  = 'Indica o teu nome na descrição do pagamento. A encomenda fica confirmada assim que recebermos o valor.';
+
+// PREÇOS: o preço de cada caixa é (nº de bolachas × PRECO_BOLACHA).
+// Ex.: com PRECO_BOLACHA = 1, uma caixa de 2 custa 2 €.
+const PRECO_BOLACHA = 1;
+// TAMANHOS DE CAIXA disponíveis. Podes acrescentar, por exemplo { tam: 2 }, { tam: 4 }.
+// Opcional: fixa o preço de uma caixa com "preco", por exemplo { tam: 12, preco: 11 } (desconto).
+const CAIXAS = [ { tam: 4 }, { tam: 6 }, { tam: 12 } ];
+// =====================================================================
+
+const SABORES = [
+  { nome: 'Chocolate Chips', chave: 'chocolateChips', cor: 'radial-gradient(circle at 30% 35%,#5a3425 0 7px,transparent 8px),radial-gradient(circle at 68% 60%,#5a3425 0 6px,transparent 7px),#E3B77F' },
+  { nome: 'Smarties',        chave: 'smarties',       cor: 'radial-gradient(circle at 30% 35%,#E4526C 0 6px,transparent 7px),radial-gradient(circle at 66% 30%,#3E8FD6 0 6px,transparent 7px),radial-gradient(circle at 55% 68%,#F2C230 0 6px,transparent 7px),#EBC794' },
+  { nome: 'Kinder',          chave: 'kinder',         cor: 'radial-gradient(circle at 35% 40%,#fff 0 8px,transparent 9px),radial-gradient(circle at 66% 62%,#fff 0 6px,transparent 7px),#9B6446' },
+  { nome: 'Cinnamon Sugar',  chave: 'cinnamonSugar',  cor: 'radial-gradient(circle at 30% 40%,#fff 0 3px,transparent 4px),radial-gradient(circle at 62% 30%,#fff 0 3px,transparent 4px),radial-gradient(circle at 55% 68%,#fff 0 3px,transparent 4px),#C98A52' }
+];
+
+const $ = s => document.querySelector(s);
+const estado = { tam: 0, qtd: SABORES.map(() => 0), carrinho: [] };
+const zeros = () => SABORES.map(() => 0);
+const soma = () => estado.qtd.reduce((a, b) => a + b, 0);
+const euros = n => n.toFixed(2).replace('.', ',') + ' €';
+const pl = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+const precoCaixa = tam => {
+  const c = CAIXAS.find(x => x.tam === tam);
+  return c && c.preco != null ? c.preco : Math.round(tam * PRECO_BOLACHA * 100) / 100;
+};
+const descreve = q => SABORES.map((s, i) => q[i] ? `${q[i]}× ${s.nome}` : '').filter(Boolean).join(', ');
+
+$('.bolachas').innerHTML = SABORES.map(s => `<span class="bolacha" style="background:${s.cor}"></span>`).join('');
+$('.caixas').innerHTML = CAIXAS.map(c => `<button type="button" class="caixa-opt" data-tam="${c.tam}" aria-pressed="false"><strong>${c.tam}</strong><span>Caixa de ${c.tam} unidades<br>${euros(precoCaixa(c.tam))}</span></button>`).join('');
+$('.caixas').style.gridTemplateColumns = 'repeat(auto-fit,minmax(130px,1fr))';
+
+$('#sabores').innerHTML = SABORES.map((s, i) => `
+  <div class="sabor">
+    <span class="bolacha" style="background:${s.cor}" aria-hidden="true"></span>
+    <span class="sabor-nome" id="sn${i}">${s.nome}</span>
+    <div class="stepper">
+      <button type="button" data-i="${i}" data-d="-1" aria-label="Menos ${s.nome}">−</button>
+      <output id="q${i}" aria-labelledby="sn${i}">0</output>
+      <button type="button" data-i="${i}" data-d="1" aria-label="Mais ${s.nome}">+</button>
+    </div>
+  </div>`).join('');
+
+$('#mbNumero').textContent = MBWAY_NUMERO;
+$('#mbInstrucoes').textContent = MBWAY_INSTRUCOES;
+
+const totalPedido = () => estado.carrinho.reduce((a, b) => a + b.preco, 0);
+const totalBolachas = () => estado.carrinho.reduce((a, b) => a + b.tam, 0);
+
+function render() {
+  const total = soma(), cap = estado.tam, cheia = cap > 0 && total === cap;
+  $('#contador').textContent = cap ? `${total} / ${cap} selecionadas` : 'Escolhe primeiro o tamanho da caixa';
+  const barra = $('#barra');
+  barra.classList.toggle('cheia', cheia);
+  barra.setAttribute('aria-valuemax', cap);
+  barra.setAttribute('aria-valuenow', total);
+  barra.firstElementChild.style.width = cap ? (total / cap * 100) + '%' : '0';
+  SABORES.forEach((_, i) => $('#q' + i).textContent = estado.qtd[i]);
+  document.querySelectorAll('.stepper button').forEach(b => {
+    const i = +b.dataset.i;
+    b.disabled = b.dataset.d === '1' ? (!cap || total >= cap) : estado.qtd[i] === 0;
+  });
+  $('#adicionar').disabled = !cheia;
+
+  const c = estado.carrinho, n = c.length;
+  $('#lista').innerHTML = n ? c.map((b, i) => `
+    <li class="item">
+      <div><strong>Caixa ${i + 1} · ${b.tam} bolachas</strong><br><span class="nota">${descreve(b.qtd)}</span></div>
+      <div class="item-dir"><b>${euros(b.preco)}</b><br>
+        <button type="button" data-a="rep" data-i="${i}">Repetir</button><button type="button" data-a="rem" data-i="${i}">Remover</button></div>
+    </li>`).join('') : '<li class="nota">Ainda não adicionaste nenhuma caixa.</li>';
+  $('#resumoTxt').textContent = n ? `${pl(n, 'caixa', 'caixas')} · ${pl(totalBolachas(), 'bolacha', 'bolachas')}` : 'Total';
+  $('#totalCarrinho').textContent = euros(totalPedido());
+  $('#total').textContent = euros(totalPedido());
+
+  $('#enviar').disabled = !(n > 0 && total === 0);
+  $('#dica').textContent = n === 0 ? 'Adiciona pelo menos uma caixa ao pedido.' :
+    total > 0 ? 'Tens uma caixa em curso. Adiciona-a ao pedido ou remove os sabores para confirmar.' : '';
+}
+
+document.querySelectorAll('.caixa-opt').forEach(b => b.addEventListener('click', () => {
+  const novo = +b.dataset.tam;
+  if (novo === estado.tam) return;
+  estado.tam = novo;
+  if (soma() > novo) estado.qtd = zeros();
+  document.querySelectorAll('.caixa-opt').forEach(x => x.setAttribute('aria-pressed', x === b));
+  render();
+}));
+
+$('#sabores').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = +b.dataset.i, d = +b.dataset.d;
+  if (d === 1 && soma() >= estado.tam) return;
+  if (d === -1 && estado.qtd[i] === 0) return;
+  estado.qtd[i] += d;
+  render();
+});
+
+$('#adicionar').addEventListener('click', () => {
+  if (soma() !== estado.tam) return;
+  estado.carrinho.push({ tam: estado.tam, qtd: [...estado.qtd], preco: precoCaixa(estado.tam) });
+  estado.qtd = zeros();
+  render();
+});
+
+$('#lista').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = +b.dataset.i;
+  if (b.dataset.a === 'rem') estado.carrinho.splice(i, 1);
+  if (b.dataset.a === 'rep') estado.carrinho.splice(i + 1, 0, { ...estado.carrinho[i], qtd: [...estado.carrinho[i].qtd] });
+  render();
+});
+
+const entrega = () => document.querySelector('input[name=entrega]:checked').value;
+const eDomicilio = () => entrega().startsWith('Entrega');
+document.querySelectorAll('input[name=entrega]').forEach(r => r.addEventListener('change', () => {
+  $('#blocoMorada').hidden = !eDomicilio();
+  $('#morada').required = eDomicilio();
+}));
+
+function mensagemWhatsApp(d) {
+  const caixas = estado.carrinho.map((b, i) => `• Caixa ${i + 1} (${b.tam}): ${descreve(b.qtd)} — ${euros(b.preco)}`).join('\n');
+  return [
+    '*Nova encomenda Sugaria* 🍪',
+    `*Nome:* ${d.nome}`,
+    `*Encomenda:* ${pl(d.nCaixas, 'caixa', 'caixas')} · ${pl(d.totalBolachas, 'bolacha', 'bolachas')}`,
+    caixas,
+    `*Entrega:* ${d.metodoEntrega}`,
+    d.morada ? `*Morada:* ${d.morada}` : '',
+    `*Total:* ${euros(d.total)} (MB WAY)`
+  ].filter(Boolean).join('\n');
+}
+
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const erro = $('#erro'); erro.textContent = '';
+  if (!estado.carrinho.length || soma() !== 0) { erro.textContent = 'Adiciona as tuas caixas ao pedido antes de confirmar.'; return; }
+  if (!$('#form').reportValidity()) { erro.textContent = 'Verifica os campos assinalados.'; return; }
+
+  const btn = $('#enviar');
+  btn.disabled = true; btn.textContent = 'A registar encomenda...';
+
+  const dados = {
+    nome: $('#nome').value.trim(),
+    telefone: $('#tel').value.trim(),
+    email: $('#email').value.trim(),
+    metodoEntrega: entrega(),
+    morada: eDomicilio() ? $('#morada').value.trim() : '',
+    nCaixas: estado.carrinho.length,
+    totalBolachas: totalBolachas(),
+    total: totalPedido(),
+    caixas: estado.carrinho.map(b => ({
+      tamanho: b.tam, preco: b.preco,
+      sabores: Object.fromEntries(SABORES.map((s, i) => [s.chave, b.qtd[i]]))
+    }))
+  };
+  SABORES.forEach((s, i) => dados[s.chave] = estado.carrinho.reduce((a, b) => a + b.qtd[i], 0));
+
+  try {
+    // no-cors: a resposta é opaca, por isso o corpo segue como texto simples com JSON
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(dados)
+    });
+  } catch (err) {
+    console.error('Falha ao enviar para o Google Sheets:', err);
+  }
+
+  const wa = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensagemWhatsApp(dados))}`;
+  $('#mNome').textContent = dados.nome.split(' ')[0];
+  $('#mResumo').innerHTML = estado.carrinho.map((b, i) =>
+    `<li>Caixa ${i + 1} (${b.tam}): ${descreve(b.qtd)} — ${euros(b.preco)}</li>`).join('') +
+    `<li><strong>${pl(dados.nCaixas, 'caixa', 'caixas')} · ${pl(dados.totalBolachas, 'bolacha', 'bolachas')}</strong></li>`;
+  $('#mTotal').textContent = euros(dados.total);
+  $('#mMb').textContent = MBWAY_NUMERO;
+  $('#mInstr').textContent = MBWAY_INSTRUCOES;
+  $('#mWa').href = wa;
+  $('#modal').hidden = false;
+  $('#mFechar').focus();
+  window.open(wa, '_blank', 'noopener');
+
+  btn.textContent = 'Confirmar encomenda';
+});
+
+$('#mFechar').addEventListener('click', () => {
+  $('#modal').hidden = true;
+  $('#form').reset();
+  estado.tam = 0; estado.qtd = zeros(); estado.carrinho = [];
+  document.querySelectorAll('.caixa-opt').forEach(x => x.setAttribute('aria-pressed', 'false'));
+  $('#blocoMorada').hidden = true; $('#morada').required = false;
+  render();
+  window.scrollTo({ top: 0 });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) $('#mFechar').click(); });
+
+render();
+</script>
+</body>
+</html>
