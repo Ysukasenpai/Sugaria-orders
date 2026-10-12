@@ -210,8 +210,8 @@ footer{background:var(--cacau);color:var(--creme);text-align:center;padding:1.1r
       <button type="button" class="num-copiar" id="mMb"></button>
       <span class="nota" id="mInstr"></span>
     </div>
-    <p class="nota" style="margin-bottom:1rem">Se o WhatsApp não abriu sozinho, usa o botão abaixo para enviar o resumo.</p>
-    <a class="btn wa" id="mWa" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+    <p class="nota" style="margin-bottom:1rem">Carrega no botão para nos enviares o resumo da encomenda pelo WhatsApp.</p>
+    <button type="button" class="btn wa" id="mWa">Enviar encomenda por WhatsApp</button>
     <button class="btn sec" id="mFechar" type="button">Fechar</button>
   </div>
 </div>
@@ -455,7 +455,7 @@ $('#form').addEventListener('submit', async e => {
     console.error('Falha ao enviar para o Google Sheets:', err);
   }
 
-  const wa = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensagemWhatsApp(dados))}`;
+  estado.mensagem = mensagemWhatsApp(dados);
   $('#mNome').textContent = dados.nome.split(' ')[0];
   $('#mResumo').innerHTML = estado.carrinho.map((b, i) =>
     `<li>Caixa ${i + 1} (${b.tam}): ${descreve(b.qtd)} — ${euros(b.preco)}</li>`).join('') +
@@ -463,12 +463,28 @@ $('#form').addEventListener('submit', async e => {
   $('#mTotal').textContent = euros(dados.total);
   $('#mMb').textContent = MBWAY_NUMERO;
   $('#mInstr').textContent = MBWAY_INSTRUCOES;
-  $('#mWa').href = wa;
   $('#modal').hidden = false;
-  $('#mFechar').focus();
-  window.open(wa, '_blank', 'noopener');
+  $('#mWa').focus();
 
   btn.textContent = 'Confirmar encomenda';
+});
+
+// Botão do modal: abre diretamente a app do WhatsApp (no telemóvel) ou o WhatsApp Web (no computador)
+$('#mWa').addEventListener('click', () => {
+  const texto = encodeURIComponent(estado.mensagem || '');
+  const web = `https://wa.me/${WHATSAPP_NUMERO}?text=${texto}`;
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    let saiu = false;
+    const aoSair = () => { if (document.hidden) saiu = true; };
+    document.addEventListener('visibilitychange', aoSair);
+    window.location.href = `whatsapp://send?phone=${WHATSAPP_NUMERO}&text=${texto}`;
+    setTimeout(() => {   // se a app não abrir, usa o link normal
+      document.removeEventListener('visibilitychange', aoSair);
+      if (!saiu && !document.hidden) window.location.href = web;
+    }, 1800);
+  } else {
+    window.open(web, '_blank', 'noopener');
+  }
 });
 
 $('#mFechar').addEventListener('click', () => {
