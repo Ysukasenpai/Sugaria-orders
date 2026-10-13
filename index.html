@@ -265,34 +265,25 @@ const WHATSAPP_NUMERO   = '351911138332';   // indicativo + número, só dígito
 const MBWAY_NUMERO      = '911 138 332';    // número MB WAY que aparece ao cliente
 const MBWAY_INSTRUCOES  = 'Indica o teu nome na descrição do pagamento. A encomenda fica confirmada assim que recebermos o valor.';
 
-// PREÇOS: o preço de cada caixa é (nº de bolachas × PRECO_BOLACHA).
-// Ex.: com PRECO_BOLACHA = 1, uma caixa de 2 custa 2 €.
-const PRECO_BOLACHA = 1;
-// TAMANHOS DE CAIXA disponíveis. Podes acrescentar, por exemplo { tam: 2 }, { tam: 4 }.
-// Opcional: fixa o preço de uma caixa com "preco", por exemplo { tam: 12, preco: 11 } (desconto).
-const CAIXAS = [ { tam: 4 }, { tam: 6 }, { tam: 12 } ];
-
-// BOLACHA ESPECIAL (a 4.ª da lista, muda com a época do ano).
-// Para trocar de bolacha, altera só estes valores e volta a enviar o ficheiro para o GitHub.
-const ESPECIAL = {
-  nome: 'Cinnamon Sugar',
-  descricao: '',                                     // linha pequena por baixo do nome (vazio = não mostra)
-  etiqueta: 'Sabor da Época',                        // selo ao lado do nome ('' para não mostrar)
-  cor: '#C98A52',                                    // cor da bolacha no desenho
-  pontos: '#FFFFFF'                                  // cor dos pontinhos (açúcar, smarties, etc.)
-};
+// Preços, tamanhos de caixa e sabores são geridos na aba "Produtos" da folha Google.
 // =====================================================================
 
-function pontilhado(base, pontos) {
-  return `radial-gradient(circle at 30% 40%,${pontos} 0 3px,transparent 4px),radial-gradient(circle at 62% 30%,${pontos} 0 3px,transparent 4px),radial-gradient(circle at 55% 68%,${pontos} 0 3px,transparent 4px),${base}`;
-}
-
-const SABORES = [
-  { nome: 'Chocolate Chips', chave: 'chocolateChips', cor: 'radial-gradient(circle at 30% 35%,#5a3425 0 7px,transparent 8px),radial-gradient(circle at 68% 60%,#5a3425 0 6px,transparent 7px),#E3B77F' },
-  { nome: 'Smarties',        chave: 'smarties',       cor: 'radial-gradient(circle at 30% 35%,#E4526C 0 6px,transparent 7px),radial-gradient(circle at 66% 30%,#3E8FD6 0 6px,transparent 7px),radial-gradient(circle at 55% 68%,#F2C230 0 6px,transparent 7px),#EBC794' },
-  { nome: 'Kinder',          chave: 'kinder',         cor: 'radial-gradient(circle at 35% 40%,#fff 0 8px,transparent 9px),radial-gradient(circle at 66% 62%,#fff 0 6px,transparent 7px),#9B6446' },
-  { nome: ESPECIAL.nome, chave: 'especial', cor: pontilhado(ESPECIAL.cor, ESPECIAL.pontos), etiqueta: ESPECIAL.etiqueta, descricao: ESPECIAL.descricao }
+// VALORES POR DEFEITO: só são usados se o site não conseguir ler a folha.
+let CAIXAS = [ { tam: 4, preco: 4 }, { tam: 6, preco: 6 }, { tam: 12, preco: 12 } ];
+let SABORES = [
+  { nome: 'Chocolate Chips', etiqueta: '', descricao: '', cor: '#E3B77F', pontos: ['#5A3425'] },
+  { nome: 'Smarties', etiqueta: '', descricao: '', cor: '#EBC794', pontos: ['#E4526C', '#3E8FD6', '#F2C230'] },
+  { nome: 'Kinder', etiqueta: '', descricao: '', cor: '#9B6446', pontos: ['#FFFFFF'] },
+  { nome: 'Cinnamon Sugar', etiqueta: 'Sabor da Época', descricao: '', cor: '#C98A52', pontos: ['#FFFFFF'] }
 ];
+
+// Desenho da bolacha: cor de base com alguns pontinhos
+function pontilhado(base, pontos) {
+  const pos = ['30% 35%', '66% 30%', '55% 68%', '30% 70%'];
+  const cores = pontos && pontos.length ? pontos : ['#FFFFFF'];
+  return pos.map((p, i) => `radial-gradient(circle at ${p},${cores[i % cores.length]} 0 5px,transparent 6px)`).concat(base).join(',');
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 const $ = s => document.querySelector(s);
 const estado = { tam: 0, qtd: SABORES.map(() => 0), carrinho: [] };
@@ -300,25 +291,36 @@ const zeros = () => SABORES.map(() => 0);
 const soma = () => estado.qtd.reduce((a, b) => a + b, 0);
 const euros = n => n.toFixed(2).replace('.', ',') + ' €';
 const pl = (n, s, p) => `${n} ${n === 1 ? s : p}`;
-const precoCaixa = tam => {
-  const c = CAIXAS.find(x => x.tam === tam);
-  return c && c.preco != null ? c.preco : Math.round(tam * PRECO_BOLACHA * 100) / 100;
-};
+const precoCaixa = tam => (CAIXAS.find(x => x.tam === tam) || {}).preco;
 const descreve = q => SABORES.map((s, i) => q[i] ? `${q[i]}× ${s.nome}` : '').filter(Boolean).join(', ');
 
-$('.caixas').innerHTML = CAIXAS.map(c => `<button type="button" class="caixa-opt" data-tam="${c.tam}" aria-pressed="false"><strong>${c.tam}</strong><span>Caixa de ${c.tam} unidades<br>${euros(precoCaixa(c.tam))}</span></button>`).join('');
-$('.caixas').style.gridTemplateColumns = 'repeat(auto-fit,minmax(130px,1fr))';
-
-$('#sabores').innerHTML = SABORES.map((s, i) => `
+function desenharProdutos() {
+  $('.caixas').innerHTML = CAIXAS.map(c => `<button type="button" class="caixa-opt" data-tam="${c.tam}" aria-pressed="false"><strong>${c.tam}</strong><span>Caixa de ${c.tam} unidades<br>${euros(c.preco)}</span></button>`).join('');
+  $('.caixas').style.gridTemplateColumns = 'repeat(auto-fit,minmax(130px,1fr))';
+  $('#sabores').innerHTML = SABORES.map((s, i) => `
   <div class="sabor">
-    <span class="bolacha" style="background:${s.cor}" aria-hidden="true"></span>
-    <span class="sabor-nome"><span id="sn${i}">${s.nome}</span>${s.etiqueta ? `<em class="selo">${s.etiqueta}</em>` : ''}${s.descricao ? `<small class="sabor-desc">${s.descricao}</small>` : ''}</span>
+    <span class="bolacha" style="background:${esc(pontilhado(s.cor, s.pontos))}" aria-hidden="true"></span>
+    <span class="sabor-nome"><span id="sn${i}">${esc(s.nome)}</span>${s.etiqueta ? `<em class="selo">${esc(s.etiqueta)}</em>` : ''}${s.descricao ? `<small class="sabor-desc">${esc(s.descricao)}</small>` : ''}</span>
     <div class="stepper">
-      <button type="button" data-i="${i}" data-d="-1" aria-label="Menos ${s.nome}">−</button>
+      <button type="button" data-i="${i}" data-d="-1" aria-label="Menos ${esc(s.nome)}">−</button>
       <output id="q${i}" aria-labelledby="sn${i}">0</output>
-      <button type="button" data-i="${i}" data-d="1" aria-label="Mais ${s.nome}">+</button>
+      <button type="button" data-i="${i}" data-d="1" aria-label="Mais ${esc(s.nome)}">+</button>
     </div>
   </div>`).join('');
+}
+desenharProdutos();
+
+// Se a folha mudou preços, caixas ou sabores, o site atualiza-se (só quando o carrinho está vazio)
+const assinatura = p => p.caixas.map(c => c.tam + ':' + c.preco).join('|') + '#' +
+  p.sabores.map(s => [s.nome, s.etiqueta || '', s.descricao || '', s.cor, (s.pontos || []).join(',')].join('~')).join('|');
+function aplicarProdutos(p) {
+  if (!p || !p.caixas || !p.caixas.length || !p.sabores || !p.sabores.length) return false;
+  if (assinatura(p) === assinatura({ caixas: CAIXAS, sabores: SABORES })) return false;
+  CAIXAS = p.caixas; SABORES = p.sabores;
+  estado.tam = 0; estado.qtd = zeros(); estado.carrinho = [];
+  desenharProdutos(); render();
+  return true;
+}
 
 $('#mbNumero').textContent = MBWAY_NUMERO;
 $('#mbInstrucoes').textContent = MBWAY_INSTRUCOES;
@@ -405,6 +407,7 @@ function mostrarHorario(v) {
 }
 
 function mostrarVagas(v) {
+  if (v && v.produtos && !estado.carrinho.length && soma() === 0) aplicarProdutos(v.produtos);
   mostrarHorario(v);
   const el = $('#vagas'), fechado = !!v && v.aberto === false;
   $('#form').hidden = fechado;
@@ -466,14 +469,15 @@ function render() {
     total > 0 ? 'Tens uma caixa em curso. Adiciona-a ao pedido ou remove os sabores para confirmar.' : '';
 }
 
-document.querySelectorAll('.caixa-opt').forEach(b => b.addEventListener('click', () => {
+$('.caixas').addEventListener('click', e => {
+  const b = e.target.closest('.caixa-opt'); if (!b) return;
   const novo = +b.dataset.tam;
   if (novo === estado.tam) return;
   estado.tam = novo;
   if (soma() > novo) estado.qtd = zeros();
   document.querySelectorAll('.caixa-opt').forEach(x => x.setAttribute('aria-pressed', x === b));
   render();
-}));
+});
 
 $('#sabores').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -574,6 +578,13 @@ $('#form').addEventListener('submit', async e => {
   btn.disabled = true; btn.textContent = 'A registar encomenda...';
 
   const vagas = await obterVagas();   // confirma que ainda há vagas antes de enviar
+  if (vagas && vagas.produtos && assinatura(vagas.produtos) !== assinatura({ caixas: CAIXAS, sabores: SABORES })) {
+    aplicarProdutos(vagas.produtos);   // a folha mudou entretanto
+    $('#erro').textContent = 'Atualizámos os preços ou os sabores enquanto montavas a encomenda. Volta a montar a tua caixa, por favor.';
+    btn.textContent = 'Confirmar encomenda'; render();
+    $('#caixa').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
   if (vagas && vagas.aberto === false) {
     mostrarVagas(vagas);
     btn.textContent = 'Confirmar encomenda'; render();
@@ -594,11 +605,10 @@ $('#form').addEventListener('submit', async e => {
     total: totalPedido(),
     caixas: estado.carrinho.map(b => ({
       tamanho: b.tam, preco: b.preco,
-      sabores: Object.fromEntries(SABORES.map((s, i) => [s.chave, b.qtd[i]]))
-    }))
+      sabores: Object.fromEntries(SABORES.map((s, i) => [s.nome, b.qtd[i]]))
+    })),
+    totais: Object.fromEntries(SABORES.map((s, i) => [s.nome, estado.carrinho.reduce((a, b) => a + b.qtd[i], 0)]))
   };
-  SABORES.forEach((s, i) => dados[s.chave] = estado.carrinho.reduce((a, b) => a + b.qtd[i], 0));
-  dados.nomeEspecial = ESPECIAL.nome;
 
   try {
     // no-cors: a resposta é opaca, por isso o corpo segue como texto simples com JSON
