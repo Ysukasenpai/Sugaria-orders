@@ -525,7 +525,12 @@ function moradaCompleta() {
 }
 
 function mensagemWhatsApp(d) {
-  const caixas = estado.carrinho.map((b, i) => `• Caixa ${i + 1} (${b.tam}): ${descreve(b.qtd)} — ${euros(b.preco)}`).join('\n');
+  // Cada caixa: título a negrito e um sabor por linha; o preço fica na última linha da caixa
+  const caixas = estado.carrinho.map((b, i) => {
+    const linhas = SABORES.map((s, j) => b.qtd[j] ? `${b.qtd[j]}× ${s.nome}` : '').filter(Boolean);
+    linhas[linhas.length - 1] += ` — ${euros(b.preco)}`;
+    return `• *Caixa ${i + 1} (${b.tam}):*\n${linhas.join('\n')}`;
+  }).join('\n');
   return [
     '*Nova encomenda Sugaria* 🍪',
     `*Nome:* ${d.nome}`,
