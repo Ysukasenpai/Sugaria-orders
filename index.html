@@ -134,6 +134,7 @@ fieldset{border:0;padding:0;margin:0 0 1rem}
 .modal{position:fixed;inset:0;background:rgba(74,42,29,.55);display:grid;place-items:center;padding:1rem;z-index:20}
 .modal[hidden]{display:none}
 .modal-caixa{background:var(--creme);border-radius:26px;padding:1.6rem;max-width:440px;width:100%;max-height:92vh;overflow:auto;animation:sobe .3s ease-out}
+.modal-caixa:focus{outline:none}
 .modal-caixa h2{margin-bottom:.6rem}
 .modal-caixa .mbway{margin:1rem 0}
 @keyframes sobe{from{transform:translateY(24px) scale(.96);opacity:0}}
@@ -241,7 +242,7 @@ footer{background:var(--cacau);color:var(--creme);text-align:center;padding:1.1r
 <footer>Sugaria · sugary.bites · Mealhada</footer>
 
 <div class="modal" id="modal" hidden>
-  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" tabindex="-1">
     <h2 id="modalTitulo">Encomenda registada!</h2>
     <p>Obrigada, <span id="mNome"></span>. Falta só o pagamento para fechar a encomenda.</p>
     <ul class="resumo" id="mResumo"></ul>
@@ -548,7 +549,11 @@ function mostrarConfirmacao(c, guardar = true) {
   $('#mMb').textContent = MBWAY_NUMERO;
   $('#mInstr').textContent = MBWAY_INSTRUCOES;
   $('#modal').hidden = false;
-  $('#mWa').focus();
+  // O foco vai para a janela (não para o botão) e o botão só fica ativo ao fim de instantes,
+  // para um toque ou tecla acidental logo ao abrir nunca enviar o cliente para o WhatsApp
+  const bw = $('#mWa'); bw.disabled = true;
+  setTimeout(() => { bw.disabled = false; }, 1200);
+  $('.modal-caixa').focus();
   if (guardar) { try { localStorage.setItem(CHAVE_CONF, JSON.stringify(c)); } catch (e) {} }
 }
 function restaurarConfirmacao() {
@@ -621,7 +626,8 @@ $('#form').addEventListener('submit', async e => {
 });
 
 // Botão do modal: abre diretamente a app do WhatsApp (no telemóvel) ou o WhatsApp Web (no computador)
-$('#mWa').addEventListener('click', () => {
+$('#mWa').addEventListener('click', ev => {
+  if (!ev.isTrusted || $('#mWa').disabled) return;   // só um toque real do cliente abre o WhatsApp
   const texto = encodeURIComponent(estado.mensagem || '');
   const web = `https://wa.me/${WHATSAPP_NUMERO}?text=${texto}`;
   if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
